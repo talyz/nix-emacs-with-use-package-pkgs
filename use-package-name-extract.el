@@ -14,7 +14,8 @@
 
 (defun upe-get-parameter (body keyword)
   (let ((list (upe-findcdr keyword body)))
-    (cons (car list) (upe-list-until #'keywordp (cdr list)))))
+    (when list
+      (cons (car list) (upe-list-until #'keywordp (cdr list))))))
 
 (defun upe-handle-use-package (use-package-expression)
   (let* ((name (cadr use-package-expression))
