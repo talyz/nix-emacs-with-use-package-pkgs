@@ -1,11 +1,10 @@
 ;; run like: "emacs ~/.emacs --no-site-file --batch -l use-package--name-extract.el -f print-packages 2>&1"
 
 (defun upe-list-until (predicate list)
-  (cond ((eq list nil)        nil)
-        ((funcall predicate
-                  (car list)) nil)
-        (t                    (cons (car list)
-                                    (upe-list-until predicate (cdr list))))))
+  (cond ((eq list nil)                  nil)
+        ((funcall predicate (car list)) nil)
+        (t                              (cons (car list)
+                                              (upe-list-until predicate (cdr list))))))
 
 (defun upe-findcdr (keyword list)
   (cond ((eq list nil)           nil)
