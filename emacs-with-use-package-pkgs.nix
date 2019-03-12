@@ -11,7 +11,7 @@ let
                       emacs --no-site-file --batch \
                             --eval "(byte-compile-file \"$out/use-package-name-extract.el\")"
                     '';
-                                      
+
   packageList = dotEmacs:
     pkgs.runCommand "usePackagePackageList" { nativeBuildInputs = [ pkgs.emacs ]; }
                     ''
@@ -19,14 +19,28 @@ let
                                         -l ${usePackageNameExtract}/use-package-name-extract.el \
                                         -f print-packages 2> $out
                     '';
-in
-rec {
   parsePackages = dotEmacs:
     filter (x: x != "")
            (filter (x: typeOf x == "string")
                    (split "\n"
                           (readFile (packageList dotEmacs))));
-  
+in
+rec {
+  usePackagePkgs = {
+    config,
+    override ? (epkgs: epkgs),
+    extraPackages ? []
+  }:
+  (epkgs:
+    let
+      packages = parsePackages config;
+      overridden = override epkgs;
+    in map (name: if hasAttr name overridden then
+                    overridden.${name}
+                  else
+                    null)
+           (packages ++ [ "use-package" ] ++ extraPackages ));
+                          
   emacsWithUsePackagePkgs = {
     config,
     package ? pkgs.emacs,
@@ -34,17 +48,9 @@ rec {
     extraPackages ? []
   }:
   let
-    packages = parsePackages config;
     emacsPackages = pkgs.emacsPackagesNgGen package;
     emacsWithPackages = emacsPackages.emacsWithPackages;
-  in emacsWithPackages (epkgs:
-                          let
-                            overridden = override epkgs;
-                          in map (name: if hasAttr name overridden then
-                                          overridden.${name}
-                                        else
-                                          null)
-                                 (packages ++ [ "use-package" ] ++ extraPackages ));
+  in emacsWithPackages (usePackagePkgs { inherit config override extraPackages; });
 
 
 }
