@@ -40,7 +40,7 @@ rec {
                   else
                     null)
            (packages ++ [ "use-package" ] ++ extraPackages ));
-                          
+
   emacsWithUsePackagePkgs = {
     config,
     package ? pkgs.emacs,
@@ -51,6 +51,4 @@ rec {
     emacsPackages = pkgs.emacsPackagesNgGen package;
     emacsWithPackages = emacsPackages.emacsWithPackages;
   in emacsWithPackages (usePackagePkgs { inherit config override extraPackages; });
-
-
 }
