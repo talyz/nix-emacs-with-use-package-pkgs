@@ -1,24 +1,25 @@
-{ pkgs }:
+{ runCommand, emacs, emacsPackagesNgGen }:
 
 with builtins;
 
 let
   usePackageNameExtract =
-    pkgs.runCommand "use-package-name-extract" { nativeBuildInputs = [ pkgs.emacs ]; }
-                    ''
-                      mkdir $out
-                      cp ${./use-package-name-extract.el} "$out/use-package-name-extract.el"
-                      emacs --no-site-file --batch \
-                            --eval "(byte-compile-file \"$out/use-package-name-extract.el\")"
-                    '';
+    runCommand "use-package-name-extract" { nativeBuildInputs = [ emacs ]; }
+               ''
+                 mkdir $out
+                 cp ${./use-package-name-extract.el} "$out/use-package-name-extract.el"
+                 emacs --no-site-file --batch \
+                       --eval "(byte-compile-file \"$out/use-package-name-extract.el\")"
+               '';
 
   packageList = dotEmacs:
-    pkgs.runCommand "usePackagePackageList" { nativeBuildInputs = [ pkgs.emacs ]; }
-                    ''
-                      emacs ${dotEmacs} --no-site-file --batch \
-                                        -l ${usePackageNameExtract}/use-package-name-extract.el \
-                                        -f print-packages 2> $out
-                    '';
+    runCommand "usePackagePackageList" { nativeBuildInputs = [ emacs ]; }
+               ''
+                 emacs ${dotEmacs} --no-site-file --batch \
+                                   -l ${usePackageNameExtract}/use-package-name-extract.el \
+                                   -f print-packages 2> $out
+               '';
+
   parsePackages = dotEmacs:
     filter (x: x != "")
            (filter (x: typeOf x == "string")
@@ -43,12 +44,11 @@ rec {
 
   emacsWithUsePackagePkgs = {
     config,
-    package ? pkgs.emacs,
     override ? (epkgs: epkgs),
     extraPackages ? []
   }:
   let
-    emacsPackages = pkgs.emacsPackagesNgGen package;
+    emacsPackages = emacsPackagesNgGen emacs;
     emacsWithPackages = emacsPackages.emacsWithPackages;
   in emacsWithPackages (usePackagePkgs { inherit config override extraPackages; });
 }
