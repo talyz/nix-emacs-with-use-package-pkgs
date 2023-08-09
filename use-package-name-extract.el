@@ -12,7 +12,7 @@
       (cons (car list) (upe-list-until #'keywordp (cdr list))))))
 
 (defun upe-handle-use-package (use-package-expression)
-  (unless (memq :disabled use-package-expression)
+  (unless (memq :disabled (cddr use-package-expression))
     (let* ((name (cadr use-package-expression))
            (body (cddr use-package-expression))
            (ensure (upe-get-parameter body :ensure))
