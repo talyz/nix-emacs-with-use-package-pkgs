@@ -6,13 +6,8 @@
         (t                              (cons (car list)
                                               (upe-list-until predicate (cdr list))))))
 
-(defun upe-findcdr (keyword list)
-  (cond ((eq list nil)           nil)
-        ((eq (car list) keyword) list)
-        (t                       (upe-findcdr keyword (cdr list)))))
-
 (defun upe-get-parameter (body keyword)
-  (let ((list (upe-findcdr keyword body)))
+  (let ((list (memq keyword body)))
     (when list
       (cons (car list) (upe-list-until #'keywordp (cdr list))))))
 
